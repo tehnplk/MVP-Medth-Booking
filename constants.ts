@@ -81,7 +81,8 @@ export const SHOP_CONFIG: ShopConfig = {
   holidays: [
     getFutureDate(3), // Shop closed 3 days from now
     getFutureDate(7)  // Shop closed 7 days from now
-  ]
+  ],
+  slotInterval: 30 // Duration of each time slot in minutes
 };
 
 // 2. STAFF AVAILABILITY SCHEDULES
@@ -112,20 +113,21 @@ export const STAFF_SCHEDULES: Record<string, StaffSchedule> = {
   }
 };
 
-export const GENERATE_TIME_SLOTS = (openHour: number, closeHour: number): TimeSlot[] => {
+export const GENERATE_TIME_SLOTS = (config: ShopConfig): TimeSlot[] => {
   const slots: TimeSlot[] = [];
+  const { openTime, closeTime, slotInterval } = config;
   
-  for (let i = openHour; i < closeHour; i++) {
-    // Generate full hour
+  const startTimeInMinutes = openTime * 60;
+  const endTimeInMinutes = closeTime * 60;
+
+  for (let time = startTimeInMinutes; time < endTimeInMinutes; time += slotInterval) {
+    const h = Math.floor(time / 60);
+    const m = time % 60;
+    const timeString = `${h}:${m.toString().padStart(2, '0')}`;
+    
     slots.push({ 
-      id: `${i}:00`, 
-      time: `${i}:00`, 
-      available: true // Default to true, will filter later based on staff
-    });
-    // Generate half hour
-    slots.push({ 
-      id: `${i}:30`, 
-      time: `${i}:30`, 
+      id: timeString, 
+      time: timeString, 
       available: true 
     });
   }

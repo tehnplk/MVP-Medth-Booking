@@ -50,6 +50,7 @@ export interface ShopConfig {
   openTime: number; // Hour 0-23
   closeTime: number; // Hour 0-23
   holidays: string[]; // ISO Date strings "YYYY-MM-DD"
+  slotInterval: number; // Minutes
 }
 
 export interface StaffSchedule {

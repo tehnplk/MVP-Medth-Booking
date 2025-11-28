@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { BookingStep, BookingState, Service, TimeSlot, Staff } from './types';
 import { SERVICES, STAFF_MEMBERS, GENERATE_TIME_SLOTS, SHOP_CONFIG, STAFF_SCHEDULES } from './constants';
@@ -234,7 +235,7 @@ const TimeSelection = ({
 
   useEffect(() => {
     // Generate slots based on Shop Config
-    setSlots(GENERATE_TIME_SLOTS(SHOP_CONFIG.openTime, SHOP_CONFIG.closeTime));
+    setSlots(GENERATE_TIME_SLOTS(SHOP_CONFIG));
   }, []);
 
   return (
@@ -245,7 +246,9 @@ const TimeSelection = ({
         </div>
         <div>
           <h2 className="text-2xl font-bold text-stone-800">เลือกเวลา</h2>
-          <p className="text-base text-stone-500">ร้านเปิด {SHOP_CONFIG.openTime}:00 - {SHOP_CONFIG.closeTime}:00 น.</p>
+          <p className="text-base text-stone-500">
+            ร้านเปิด {SHOP_CONFIG.openTime}:00 - {SHOP_CONFIG.closeTime}:00 น.
+          </p>
         </div>
       </div>
 
