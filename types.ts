@@ -1,3 +1,4 @@
+
 export enum BookingStep {
   SERVICE_SELECTION = 0,
   DATE_SELECTION = 1,
@@ -42,4 +43,17 @@ export interface BookingState {
 export interface AIRecommendation {
   recommendedServiceId: string;
   reasoning: string;
+}
+
+// New Configurations
+export interface ShopConfig {
+  openTime: number; // Hour 0-23
+  closeTime: number; // Hour 0-23
+  holidays: string[]; // ISO Date strings "YYYY-MM-DD"
+}
+
+export interface StaffSchedule {
+  staffId: string;
+  offDays: string[]; // ISO Date strings "YYYY-MM-DD"
+  busySlots: { [date: string]: string[] }; // Key is date, Value is array of time strings "10:00"
 }

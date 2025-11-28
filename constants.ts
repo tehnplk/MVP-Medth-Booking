@@ -1,4 +1,5 @@
-import { Service, Staff, TimeSlot } from './types';
+
+import { Service, Staff, TimeSlot, ShopConfig, StaffSchedule } from './types';
 
 export const SERVICES: Service[] = [
   {
@@ -66,14 +67,67 @@ export const STAFF_MEMBERS: Staff[] = [
   }
 ];
 
-export const GENERATE_TIME_SLOTS = (): TimeSlot[] => {
-  const slots: TimeSlot[] = [];
-  const startHour = 10;
-  const endHour = 20;
+// 1. SHOP CONFIGURATION
+// Helper to get a date string for "tomorrow" or X days from now for demo purposes
+const getFutureDate = (days: number) => {
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  return d.toISOString().split('T')[0];
+};
 
-  for (let i = startHour; i < endHour; i++) {
-    slots.push({ id: `${i}:00`, time: `${i}:00`, available: Math.random() > 0.3 });
-    slots.push({ id: `${i}:30`, time: `${i}:30`, available: Math.random() > 0.3 });
+export const SHOP_CONFIG: ShopConfig = {
+  openTime: 10, // 10:00 AM
+  closeTime: 20, // 8:00 PM
+  holidays: [
+    getFutureDate(3), // Shop closed 3 days from now
+    getFutureDate(7)  // Shop closed 7 days from now
+  ]
+};
+
+// 2. STAFF AVAILABILITY SCHEDULES
+export const STAFF_SCHEDULES: Record<string, StaffSchedule> = {
+  's01': {
+    staffId: 's01',
+    offDays: [getFutureDate(1)], // Off tomorrow
+    busySlots: {
+      [getFutureDate(0)]: ['10:00', '10:30', '14:00'] // Busy today at specific times
+    }
+  },
+  's02': {
+    staffId: 's02',
+    offDays: [getFutureDate(2)],
+    busySlots: {}
+  },
+  's03': {
+    staffId: 's03',
+    offDays: [],
+    busySlots: {
+      [getFutureDate(0)]: ['13:00', '13:30']
+    }
+  },
+  's04': {
+    staffId: 's04',
+    offDays: [],
+    busySlots: {}
+  }
+};
+
+export const GENERATE_TIME_SLOTS = (openHour: number, closeHour: number): TimeSlot[] => {
+  const slots: TimeSlot[] = [];
+  
+  for (let i = openHour; i < closeHour; i++) {
+    // Generate full hour
+    slots.push({ 
+      id: `${i}:00`, 
+      time: `${i}:00`, 
+      available: true // Default to true, will filter later based on staff
+    });
+    // Generate half hour
+    slots.push({ 
+      id: `${i}:30`, 
+      time: `${i}:30`, 
+      available: true 
+    });
   }
   return slots;
 };
