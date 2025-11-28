@@ -1,5 +1,26 @@
 
-import { Service, Staff, TimeSlot, ShopConfig, StaffSchedule } from './types';
+import { Service, Staff, TimeSlot, ShopConfig, StaffSchedule, Branch, BookingHistory } from './types';
+
+export const BRANCHES: Branch[] = [
+  {
+    id: 'b-siam',
+    name: 'สาขาสยามพารากอน',
+    location: 'ชั้น 3 ฝั่ง North โซน Beauty',
+    image: 'https://picsum.photos/400/300?random=20'
+  },
+  {
+    id: 'b-central',
+    name: 'สาขาเซ็นทรัลเวิลด์',
+    location: 'ชั้น 2 โซน Dazzle',
+    image: 'https://picsum.photos/400/300?random=21'
+  },
+  {
+    id: 'b-thonglor',
+    name: 'สาขาทองหล่อ',
+    location: 'สุขุมวิท 55 (ทองหล่อ 13)',
+    image: 'https://picsum.photos/400/300?random=22'
+  }
+];
 
 export const SERVICES: Service[] = [
   {
@@ -82,7 +103,7 @@ export const SHOP_CONFIG: ShopConfig = {
     getFutureDate(3), // Shop closed 3 days from now
     getFutureDate(7)  // Shop closed 7 days from now
   ],
-  slotInterval: 30 // Duration of each time slot in minutes
+  slotInterval: 60 // Duration of each time slot in minutes (Default 1 hr)
 };
 
 // 2. STAFF AVAILABILITY SCHEDULES
@@ -133,3 +154,37 @@ export const GENERATE_TIME_SLOTS = (config: ShopConfig): TimeSlot[] => {
   }
   return slots;
 };
+
+// 3. MOCK BOOKING HISTORY
+export const MOCK_BOOKING_HISTORY: BookingHistory[] = [
+  {
+    id: 'SS-251210-9981',
+    branchName: 'สาขาสยามพารากอน',
+    serviceName: 'นวดแผนไทย',
+    date: getFutureDate(1),
+    time: '14:00',
+    staffName: 'คุณสมศรี',
+    customerPhone: '0812345678', // Test phone number
+    status: 'confirmed'
+  },
+  {
+    id: 'SS-251215-1234',
+    branchName: 'สาขาทองหล่อ',
+    serviceName: 'นวดน้ำมันอโรมา',
+    date: getFutureDate(5),
+    time: '18:00',
+    staffName: 'คุณแอนนา',
+    customerPhone: '0812345678',
+    status: 'confirmed'
+  },
+  {
+    id: 'SS-251101-5566',
+    branchName: 'สาขาเซ็นทรัลเวิลด์',
+    serviceName: 'นวดฝ่าเท้า',
+    date: '2025-11-01',
+    time: '12:00',
+    staffName: 'คุณวิชัย',
+    customerPhone: '0999999999',
+    status: 'completed'
+  }
+];

@@ -1,11 +1,20 @@
 
 export enum BookingStep {
-  SERVICE_SELECTION = 0,
-  DATE_SELECTION = 1,
-  TIME_SELECTION = 2,
-  STAFF_SELECTION = 3,
-  CONFIRMATION = 4,
-  SUCCESS = 5,
+  BRANCH_SELECTION = 0,
+  SERVICE_SELECTION = 1,
+  DATE_SELECTION = 2,
+  TIME_SELECTION = 3,
+  STAFF_SELECTION = 4,
+  CONFIRMATION = 5,
+  SUCCESS = 6,
+  MY_BOOKINGS = 7, // New step for checking history
+}
+
+export interface Branch {
+  id: string;
+  name: string;
+  location: string;
+  image: string;
 }
 
 export interface Service {
@@ -32,6 +41,7 @@ export interface TimeSlot {
 }
 
 export interface BookingState {
+  branch: Branch | null;
   service: Service | null;
   date: Date | null;
   timeSlot: TimeSlot | null;
@@ -57,4 +67,15 @@ export interface StaffSchedule {
   staffId: string;
   offDays: string[]; // ISO Date strings "YYYY-MM-DD"
   busySlots: { [date: string]: string[] }; // Key is date, Value is array of time strings "10:00"
+}
+
+export interface BookingHistory {
+  id: string;
+  branchName: string;
+  serviceName: string;
+  date: string; // ISO String
+  time: string;
+  staffName: string;
+  customerPhone: string;
+  status: 'confirmed' | 'completed' | 'cancelled';
 }

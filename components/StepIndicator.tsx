@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { BookingStep } from '../types';
 import { Check } from 'lucide-react';
@@ -8,6 +9,7 @@ interface StepIndicatorProps {
 
 export const StepIndicator: React.FC<StepIndicatorProps> = ({ currentStep }) => {
   const steps = [
+    { id: BookingStep.BRANCH_SELECTION, label: 'สาขา' },
     { id: BookingStep.SERVICE_SELECTION, label: 'บริการ' },
     { id: BookingStep.DATE_SELECTION, label: 'วันที่' },
     { id: BookingStep.TIME_SELECTION, label: 'เวลา' },
@@ -15,7 +17,7 @@ export const StepIndicator: React.FC<StepIndicatorProps> = ({ currentStep }) => 
     { id: BookingStep.CONFIRMATION, label: 'ยืนยัน' },
   ];
 
-  if (currentStep === BookingStep.SUCCESS) return null;
+  if (currentStep === BookingStep.SUCCESS || currentStep === BookingStep.MY_BOOKINGS) return null;
 
   return (
     <div className="w-full px-4 py-4 bg-white border-b border-stone-100">
