@@ -1,4 +1,3 @@
-
 import { Service, Staff, TimeSlot, ShopConfig, StaffSchedule, Branch, BookingHistory } from './types';
 
 export const BRANCHES: Branch[] = [
@@ -6,19 +5,19 @@ export const BRANCHES: Branch[] = [
     id: 'b-siam',
     name: 'สาขาสยามพารากอน',
     location: 'ชั้น 3 ฝั่ง North โซน Beauty',
-    image: 'https://picsum.photos/400/300?random=20'
+    image: 'https://images.unsplash.com/photo-1590073242678-cfe2f792f3c8?auto=format&fit=crop&w=800&q=80'
   },
   {
     id: 'b-central',
     name: 'สาขาเซ็นทรัลเวิลด์',
     location: 'ชั้น 2 โซน Dazzle',
-    image: 'https://picsum.photos/400/300?random=21'
+    image: 'https://images.unsplash.com/photo-1565060169194-1372607d8804?auto=format&fit=crop&w=800&q=80'
   },
   {
     id: 'b-thonglor',
     name: 'สาขาทองหล่อ',
     location: 'สุขุมวิท 55 (ทองหล่อ 13)',
-    image: 'https://picsum.photos/400/300?random=22'
+    image: 'https://images.unsplash.com/photo-1528183429752-a97d0bf99b5a?auto=format&fit=crop&w=800&q=80'
   }
 ];
 
@@ -59,132 +58,115 @@ export const SERVICES: Service[] = [
 
 export const STAFF_MEMBERS: Staff[] = [
   {
-    id: 's01',
-    name: 'คุณสมศรี',
-    role: 'Senior Therapist',
-    specialty: ['thai-traditional', 'foot-massage'],
-    image: 'https://picsum.photos/100/100?random=10'
+    id: 's-somchai',
+    name: 'หมอสมชาย',
+    role: 'ผู้เชี่ยวชาญการนวดไทย',
+    image: 'https://randomuser.me/api/portraits/men/32.jpg',
+    specialty: ['thai-traditional', 'foot-massage']
   },
   {
-    id: 's02',
-    name: 'คุณวิชัย',
-    role: 'Therapist',
-    specialty: ['thai-traditional', 'office-syndrome'],
-    image: 'https://picsum.photos/100/100?random=11'
+    id: 's-anna',
+    name: 'หมอแอนนา',
+    role: 'ผู้เชี่ยวชาญอโรมา',
+    image: 'https://randomuser.me/api/portraits/women/44.jpg',
+    specialty: ['aroma-oil', 'office-syndrome']
   },
   {
-    id: 's03',
-    name: 'คุณแอนนา',
-    role: 'Aroma Specialist',
-    specialty: ['aroma-oil', 'office-syndrome'],
-    image: 'https://picsum.photos/100/100?random=12'
+    id: 's-lek',
+    name: 'หมอเล็ก',
+    role: 'หมอนวดอาวุโส',
+    image: 'https://randomuser.me/api/portraits/women/68.jpg',
+    specialty: ['thai-traditional', 'office-syndrome', 'foot-massage']
   },
   {
-    id: 's04',
-    name: 'คุณนภา',
-    role: 'Master Therapist',
-    specialty: ['thai-traditional', 'aroma-oil', 'foot-massage', 'office-syndrome'],
-    image: 'https://picsum.photos/100/100?random=13'
+    id: 's-keng',
+    name: 'หมอเก่ง',
+    role: 'นักกายภาพบำบัด',
+    image: 'https://randomuser.me/api/portraits/men/85.jpg',
+    specialty: ['office-syndrome', 'thai-traditional']
   }
 ];
 
-// 1. SHOP CONFIGURATION
-// Helper to get a date string for "tomorrow" or X days from now for demo purposes
-const getFutureDate = (days: number) => {
-  const d = new Date();
-  d.setDate(d.getDate() + days);
-  return d.toISOString().split('T')[0];
-};
-
 export const SHOP_CONFIG: ShopConfig = {
-  openTime: 10, // 10:00 AM
-  closeTime: 20, // 8:00 PM
-  holidays: [
-    getFutureDate(3), // Shop closed 3 days from now
-    getFutureDate(7)  // Shop closed 7 days from now
-  ],
-  slotInterval: 60 // Duration of each time slot in minutes (Default 1 hr)
+  openTime: 10,
+  closeTime: 20,
+  holidays: ['2025-12-05', '2025-12-31'],
+  slotInterval: 60 // 60 minutes
 };
 
-// 2. STAFF AVAILABILITY SCHEDULES
-export const STAFF_SCHEDULES: Record<string, StaffSchedule> = {
-  's01': {
-    staffId: 's01',
-    offDays: [getFutureDate(1)], // Off tomorrow
+export const STAFF_SCHEDULES: { [key: string]: StaffSchedule } = {
+  's-somchai': {
+    staffId: 's-somchai',
+    offDays: ['2025-12-06'],
     busySlots: {
-      [getFutureDate(0)]: ['10:00', '10:30', '14:00'] // Busy today at specific times
+      '2025-12-09': ['10:00', '14:00']
     }
   },
-  's02': {
-    staffId: 's02',
-    offDays: [getFutureDate(2)],
-    busySlots: {}
-  },
-  's03': {
-    staffId: 's03',
-    offDays: [],
-    busySlots: {
-      [getFutureDate(0)]: ['13:00', '13:30']
-    }
-  },
-  's04': {
-    staffId: 's04',
-    offDays: [],
+  's-anna': {
+    staffId: 's-anna',
+    offDays: ['2025-12-07'],
     busySlots: {}
   }
 };
 
 export const GENERATE_TIME_SLOTS = (config: ShopConfig): TimeSlot[] => {
   const slots: TimeSlot[] = [];
-  const { openTime, closeTime, slotInterval } = config;
-  
-  const startTimeInMinutes = openTime * 60;
-  const endTimeInMinutes = closeTime * 60;
+  const startHour = config.openTime;
+  const endHour = config.closeTime;
+  const interval = config.slotInterval;
 
-  for (let time = startTimeInMinutes; time < endTimeInMinutes; time += slotInterval) {
-    const h = Math.floor(time / 60);
-    const m = time % 60;
-    const timeString = `${h}:${m.toString().padStart(2, '0')}`;
+  // Convert hours to minutes for easier calculation
+  let currentMinutes = startHour * 60;
+  const endMinutes = endHour * 60;
+
+  while (currentMinutes < endMinutes) {
+    const h = Math.floor(currentMinutes / 60);
+    const m = currentMinutes % 60;
     
-    slots.push({ 
-      id: timeString, 
-      time: timeString, 
-      available: true 
+    // Format "HH:mm"
+    const timeString = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+    
+    slots.push({
+      id: `t-${timeString}`,
+      time: timeString,
+      available: true // Default to true, will be filtered by staff availability later
     });
+
+    currentMinutes += interval;
   }
+
   return slots;
 };
 
-// 3. MOCK BOOKING HISTORY
 export const MOCK_BOOKING_HISTORY: BookingHistory[] = [
   {
-    id: 'SS-251210-9981',
+    id: 'SS-251201-1234',
     branchName: 'สาขาสยามพารากอน',
     serviceName: 'นวดแผนไทย',
-    date: getFutureDate(1),
+    date: '2025-12-01T00:00:00.000Z',
     time: '14:00',
-    staffName: 'คุณสมศรี',
-    customerPhone: '0812345678', // Test phone number
-    status: 'confirmed'
+    staffName: 'หมอสมชาย',
+    customerPhone: '0812345678',
+    status: 'completed'
   },
   {
-    id: 'SS-251215-1234',
+    id: 'SS-251215-5678',
     branchName: 'สาขาทองหล่อ',
     serviceName: 'นวดน้ำมันอโรมา',
-    date: getFutureDate(5),
-    time: '18:00',
-    staffName: 'คุณแอนนา',
+    date: '2025-12-15T00:00:00.000Z',
+    time: '10:00',
+    staffName: 'หมอแอนนา',
     customerPhone: '0812345678',
     status: 'confirmed'
   },
   {
-    id: 'SS-251101-5566',
+    id: 'SS-251220-9999',
     branchName: 'สาขาเซ็นทรัลเวิลด์',
-    serviceName: 'นวดฝ่าเท้า',
-    date: '2025-11-01',
-    time: '12:00',
-    staffName: 'คุณวิชัย',
-    customerPhone: '0999999999',
-    status: 'completed'
+    serviceName: 'นวดแก้ออฟฟิศซินโดรม',
+    date: '2025-12-20T00:00:00.000Z',
+    time: '16:00',
+    staffName: 'หมอเก่ง',
+    customerPhone: '0900000000',
+    status: 'confirmed'
   }
 ];

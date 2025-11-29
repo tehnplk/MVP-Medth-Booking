@@ -32,6 +32,13 @@ const formatThaiDate = (date: Date) => {
   return `${day} ${month} ${year}`;
 };
 
+const formatThaiDateShort = (date: Date) => {
+  const day = date.getDate();
+  const month = new Intl.DateTimeFormat('th-TH', { month: 'short' }).format(date);
+  // No year as requested
+  return `${day} ${month}`;
+};
+
 const formatThaiDateString = (isoDate: string) => {
   const date = new Date(isoDate);
   return formatThaiDate(date);
@@ -43,7 +50,17 @@ const toISODateString = (date: Date) => {
   return new Date(date.getTime() - offset).toISOString().split('T')[0];
 };
 
-// --- Sub-components defined here for simplicity in single-file stricture ---
+const formatPhoneNumber = (value: string) => {
+  const phoneNumber = value.replace(/[^\d]/g, '');
+  const phoneNumberLength = phoneNumber.length;
+  if (phoneNumberLength < 4) return phoneNumber;
+  if (phoneNumberLength < 7) {
+    return `${phoneNumber.slice(0, 3)}-${phoneNumber.slice(3)}`;
+  }
+  return `${phoneNumber.slice(0, 3)}-${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`;
+};
+
+// --- Sub-components ---
 
 // 0. Branch Selection Component
 const BranchSelection = ({ 
@@ -54,9 +71,35 @@ const BranchSelection = ({
   onCheckHistory: () => void
 }) => {
   return (
-    <div className="space-y-6 animate-fade-in pb-20">
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-3">
+    <div className="space-y-8 animate-fade-in pb-20">
+      {/* 1. Search Section - Top Priority */}
+      <div className="bg-white p-5 rounded-3xl shadow-sm border border-stone-200">
+         <h2 className="text-lg font-bold text-stone-800 mb-3 flex items-center gap-2">
+           <Search size={22} className="text-primary-600"/> 
+           มีรายการจองอยู่แล้ว?
+         </h2>
+         <Button 
+          variant="outline" 
+          fullWidth 
+          onClick={onCheckHistory}
+          className="!py-3 !text-lg !rounded-xl border-2 border-stone-200 text-stone-600 hover:border-primary-500 hover:text-primary-700 bg-stone-50"
+        >
+          ตรวจสอบสถานะ / ค้นหาตั๋ว
+        </Button>
+      </div>
+
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center" aria-hidden="true">
+          <div className="w-full border-t border-primary-200"></div>
+        </div>
+        <div className="relative flex justify-center">
+          <span className="px-3 bg-primary-50 text-sm text-stone-400 font-medium">หรือ จองคิวใหม่</span>
+        </div>
+      </div>
+
+      {/* 2. Branch Selection Section */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-3 mb-2">
           <div className="bg-primary-100 p-3 rounded-full text-primary-600">
             <Store size={32} />
           </div>
@@ -65,42 +108,30 @@ const BranchSelection = ({
             <p className="text-base text-stone-500">เลือกสาขาที่ใกล้คุณที่สุดค่ะ</p>
           </div>
         </div>
-      </div>
 
-      <div className="pb-4">
-        <Button 
-          variant="outline" 
-          fullWidth 
-          onClick={onCheckHistory}
-          className="!py-4 !text-lg !rounded-2xl border-2 border-stone-200 text-stone-600 hover:border-primary-500 hover:text-primary-700 bg-white shadow-sm"
-        >
-          <Search size={20} className="mr-2" />
-          ตรวจสอบการจอง (ค้นหา)
-        </Button>
-      </div>
-
-      <div className="space-y-4">
-        {BRANCHES.map((branch) => (
-          <div 
-            key={branch.id}
-            onClick={() => onSelect(branch)}
-            className="group relative flex flex-col sm:flex-row items-start sm:items-center p-4 rounded-3xl border-2 border-stone-200 bg-white hover:border-primary-300 hover:bg-stone-50 transition-all cursor-pointer active:scale-[0.98] touch-manipulation shadow-sm"
-          >
-            <img src={branch.image} alt={branch.name} className="w-full sm:w-28 h-40 sm:h-28 rounded-2xl object-cover shadow-md mb-4 sm:mb-0" />
-            
-            <div className="sm:ml-5 flex-1 w-full">
-              <h3 className="text-xl font-bold text-stone-900 leading-tight mb-2 group-hover:text-primary-700 transition-colors">{branch.name}</h3>
-              <div className="flex items-start gap-2 text-stone-500 text-base leading-relaxed">
-                <MapPin size={18} className="mt-1 shrink-0 text-primary-500" />
-                <span>{branch.location}</span>
+        <div className="space-y-4">
+          {BRANCHES.map((branch) => (
+            <div 
+              key={branch.id}
+              onClick={() => onSelect(branch)}
+              className="group relative flex flex-col sm:flex-row items-start sm:items-center p-4 rounded-3xl border-2 border-stone-200 bg-white hover:border-primary-300 hover:bg-white transition-all cursor-pointer active:scale-[0.98] touch-manipulation shadow-sm"
+            >
+              <img src={branch.image} alt={branch.name} className="w-full sm:w-28 h-40 sm:h-28 rounded-2xl object-cover shadow-md mb-4 sm:mb-0" />
+              
+              <div className="sm:ml-5 flex-1 w-full">
+                <h3 className="text-xl font-bold text-stone-900 leading-tight mb-2 group-hover:text-primary-700 transition-colors">{branch.name}</h3>
+                <div className="flex items-start gap-2 text-stone-500 text-base leading-relaxed">
+                  <MapPin size={18} className="mt-1 shrink-0 text-primary-500" />
+                  <span>{branch.location}</span>
+                </div>
+              </div>
+              
+              <div className="absolute top-4 right-4 sm:relative sm:top-auto sm:right-auto sm:ml-4 bg-primary-100 text-primary-600 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                <ChevronLeft size={24} className="rotate-180" />
               </div>
             </div>
-            
-            <div className="absolute top-4 right-4 sm:relative sm:top-auto sm:right-auto sm:ml-4 bg-primary-100 text-primary-600 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-              <ChevronLeft size={24} className="rotate-180" />
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -131,7 +162,7 @@ const ServiceSelection = ({
   return (
     <div className="space-y-6 animate-fade-in pb-20">
       {/* AI Section - Slightly larger text */}
-      <div className="bg-gradient-to-br from-primary-50 to-white p-6 rounded-3xl border border-primary-100 shadow-sm">
+      <div className="bg-gradient-to-br from-white to-primary-50 p-6 rounded-3xl border border-primary-100 shadow-sm">
         <div className="flex items-start gap-4">
           <div className="bg-primary-100 p-3 rounded-2xl text-primary-600 mt-1">
             <Sparkles size={28} />
@@ -279,7 +310,7 @@ const DateSelection = ({
                 {getDayName(date)}
               </span>
               <span className={`text-2xl font-bold ${holiday ? 'line-through text-stone-400' : ''}`}>
-                {formatThaiDate(date)}
+                {formatThaiDateShort(date)}
               </span>
               {holiday && (
                 <div className="absolute top-2 right-2 text-red-400">
@@ -430,21 +461,13 @@ const StaffSelection = ({
               </div>
               
               <div className="ml-5 flex-1">
-                <h3 className={`text-xl font-bold mb-1 ${!available ? 'text-stone-500' : 'text-stone-900'}`}>{staff.name}</h3>
-                <p className={`text-base font-medium inline-block px-2 py-0.5 rounded-lg mb-2 ${!available ? 'bg-stone-200 text-stone-500' : 'text-primary-700 bg-primary-100'}`}>
-                  {staff.role}
-                </p>
-                <div className="flex gap-1">
-                  {[1,2,3,4,5].map(i => <div key={i} className={`w-4 h-4 rounded-full ${!available ? 'bg-stone-200' : 'bg-yellow-400'}`} />)}
-                </div>
+                <h3 className={`text-xl font-bold mb-1 ${isSelected ? 'text-primary-900' : 'text-stone-800'}`}>{staff.name}</h3>
+                <p className="text-base text-stone-500">{staff.role}</p>
               </div>
               
-              {available && (
-                <div className={`
-                  w-10 h-10 rounded-full border-2 flex items-center justify-center transition-colors
-                  ${isSelected ? 'border-primary-600 bg-primary-600 text-white' : 'border-stone-300 text-transparent'}
-                `}>
-                  <CheckCircle2 size={24} strokeWidth={3} />
+              {isSelected && (
+                <div className="mr-2 text-primary-600">
+                  <CheckCircle2 size={32} className="fill-current text-white bg-primary-600 rounded-full" />
                 </div>
               )}
             </button>
@@ -457,443 +480,293 @@ const StaffSelection = ({
 
 // 5. Confirmation Component
 const Confirmation = ({ 
-  booking, 
+  bookingState, 
   onConfirm,
-  isProcessing
+  onChange 
 }: { 
-  booking: BookingState, 
-  onConfirm: (details: {name: string, phone: string}) => void,
-  isProcessing: boolean
+  bookingState: BookingState, 
+  onConfirm: () => void,
+  onChange: (field: string, value: string) => void
 }) => {
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [touched, setTouched] = useState({ name: false, phone: false });
-
-  // 1. Strip non-digits to get raw value
-  const rawPhone = phone.replace(/\D/g, '');
-  
-  // 2. Validate strict Thai mobile regex: Starts with 06, 08, 09 followed by 8 digits (total 10)
-  const isValidMobile = /^0[689]\d{8}$/.test(rawPhone);
-  
-  // 3. Name validation
-  const isValidName = name.trim().length > 0;
-
-  // 4. Can submit?
-  const canSubmit = isValidName && isValidMobile;
+  const [isValidPhone, setIsValidPhone] = useState(true);
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Only allow numbers
-    const input = e.target.value.replace(/\D/g, '');
+    const rawValue = e.target.value.replace(/\D/g, ''); // Remove non-digits
     
     // Limit to 10 digits
-    const limited = input.slice(0, 10);
+    const truncated = rawValue.slice(0, 10);
     
-    // Mask as 0XX-XXX-XXXX
-    let formatted = limited;
-    if (limited.length > 6) {
-      formatted = `${limited.slice(0, 3)}-${limited.slice(3, 6)}-${limited.slice(6)}`;
-    } else if (limited.length > 3) {
-      formatted = `${limited.slice(0, 3)}-${limited.slice(3)}`;
-    }
-    
-    setPhone(formatted);
-    setTouched(prev => ({ ...prev, phone: true }));
+    onChange('customerPhone', truncated);
+
+    // Validate: Must be 10 digits and start with 06, 08, 09
+    const regex = /^0[689]\d{8}$/;
+    setIsValidPhone(regex.test(truncated) || truncated.length === 0);
   };
 
-  const handleBlur = (field: 'name' | 'phone') => {
-    setTouched(prev => ({ ...prev, [field]: true }));
-  };
-
-  const handleSubmit = () => {
-    setTouched({ name: true, phone: true });
-    if (canSubmit) onConfirm({ name, phone });
-  };
+  const formattedPhone = formatPhoneNumber(bookingState.customerPhone);
+  const canSubmit = bookingState.customerName.trim().length > 0 && 
+                    bookingState.customerPhone.length === 10 && isValidPhone;
 
   return (
-    <div className="space-y-8 animate-fade-in pb-24">
-      <div className="flex items-center gap-3">
+    <div className="space-y-6 animate-fade-in pb-20">
+      <div className="flex items-center gap-3 mb-2">
         <div className="bg-primary-100 p-3 rounded-full text-primary-600">
           <CheckCircle2 size={32} />
         </div>
-        <h2 className="text-2xl font-bold text-stone-800">สรุปข้อมูลการจอง</h2>
-      </div>
-      
-      {/* Booking Summary Card */}
-      <div className="bg-white rounded-3xl p-6 shadow-md border-2 border-primary-100 space-y-6">
-        <div className="flex items-center gap-5 pb-6 border-b-2 border-stone-100">
-          <img src={booking.service?.image} className="w-24 h-24 rounded-2xl object-cover shadow-sm" alt="" />
-          <div>
-            <h3 className="text-xl font-bold text-stone-900 mb-1">{booking.service?.name}</h3>
-            <p className="text-lg text-stone-600">{booking.service?.duration} นาที • <span className="text-primary-600 font-bold">{booking.service?.price} บ.</span></p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 gap-4 text-lg">
-           <div className="flex items-center gap-3 bg-stone-50 p-4 rounded-xl">
-            <div className="bg-white p-2 rounded-full shadow-sm text-primary-500">
-              <Store size={24}/>
-            </div>
-            <div>
-              <div className="text-sm text-stone-500">สาขา</div>
-              <div className="font-bold text-stone-800">{booking.branch?.name}</div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 bg-stone-50 p-4 rounded-xl">
-            <div className="bg-white p-2 rounded-full shadow-sm text-primary-500">
-              <Calendar size={24}/>
-            </div>
-            <div>
-              <div className="text-sm text-stone-500">วันที่</div>
-              <div className="font-bold text-stone-800">
-                {booking.date && formatThaiDate(booking.date)}
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 bg-stone-50 p-4 rounded-xl">
-            <div className="bg-white p-2 rounded-full shadow-sm text-primary-500">
-              <Clock size={24}/>
-            </div>
-            <div>
-              <div className="text-sm text-stone-500">เวลา</div>
-              <div className="font-bold text-stone-800">{booking.timeSlot?.time} น.</div>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-3 bg-stone-50 p-4 rounded-xl">
-            <div className="bg-white p-2 rounded-full shadow-sm text-primary-500">
-              <User size={24}/>
-            </div>
-            <div>
-              <div className="text-sm text-stone-500">พนักงาน</div>
-              <div className="font-bold text-stone-800">{booking.staff?.name}</div>
-            </div>
-          </div>
+        <div>
+          <h2 className="text-2xl font-bold text-stone-800">ยืนยันการจอง</h2>
+          <p className="text-base text-stone-500">ตรวจสอบข้อมูลก่อนยืนยันนะคะ</p>
         </div>
       </div>
 
-      {/* User Input Form */}
-      <div className="bg-stone-50 rounded-3xl p-6 space-y-6 border border-stone-200 shadow-inner">
-        <h4 className="text-xl font-bold text-stone-800 flex items-center gap-2">
-          <User size={24} className="text-primary-600"/>
-          ข้อมูลผู้จอง
-        </h4>
-        
-        <div className="space-y-5">
-          {/* Name Field */}
-          <div>
-            <label className="text-lg font-bold text-stone-700 mb-2 block">
-              ชื่อ - นามสกุล <span className="text-red-500">*</span>
-            </label>
-            <input 
-              type="text" 
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              onBlur={() => handleBlur('name')}
-              className={`
-                w-full px-5 py-4 rounded-xl border-2 text-xl outline-none shadow-sm transition-all
-                placeholder:text-stone-300
-                ${touched.name && !isValidName 
-                  ? 'border-red-400 bg-red-50 focus:ring-2 focus:ring-red-200' 
-                  : 'border-stone-300 focus:border-primary-500 focus:ring-4 focus:ring-primary-100'}
-              `}
-              placeholder="ระบุชื่อของคุณ"
+      <div className="bg-white rounded-3xl p-6 shadow-sm border border-stone-200 space-y-4">
+        <div className="flex justify-between border-b border-stone-100 pb-3">
+          <span className="text-stone-500">สาขา</span>
+          <span className="font-bold text-stone-800 text-right">{bookingState.branch?.name}</span>
+        </div>
+        <div className="flex justify-between border-b border-stone-100 pb-3">
+          <span className="text-stone-500">บริการ</span>
+          <span className="font-bold text-stone-800">{bookingState.service?.name}</span>
+        </div>
+        <div className="flex justify-between border-b border-stone-100 pb-3">
+          <span className="text-stone-500">วันที่</span>
+          <span className="font-bold text-stone-800">
+            {bookingState.date ? formatThaiDate(bookingState.date) : '-'}
+          </span>
+        </div>
+        <div className="flex justify-between border-b border-stone-100 pb-3">
+          <span className="text-stone-500">เวลา</span>
+          <span className="font-bold text-stone-800">{bookingState.timeSlot?.time} น.</span>
+        </div>
+        <div className="flex justify-between border-b border-stone-100 pb-3">
+          <span className="text-stone-500">พนักงาน</span>
+          <span className="font-bold text-stone-800">{bookingState.staff?.name}</span>
+        </div>
+        <div className="flex justify-between items-center pt-2">
+          <span className="text-lg font-bold text-stone-800">ราคา</span>
+          <span className="text-2xl font-bold text-primary-600">{bookingState.service?.price} บาท</span>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <div>
+          <label className="block text-base font-medium text-stone-700 mb-2">ชื่อผู้จอง</label>
+          <input
+            type="text"
+            value={bookingState.customerName}
+            onChange={(e) => onChange('customerName', e.target.value)}
+            className="w-full px-5 py-4 rounded-xl border-2 border-stone-200 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none text-lg"
+            placeholder="ระบุชื่อของคุณ"
+          />
+        </div>
+        <div>
+          <label className="block text-base font-medium text-stone-700 mb-2">เบอร์โทรศัพท์ (มือถือ 10 หลัก)</label>
+          <div className="relative">
+             <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400" size={20} />
+             <input
+              type="tel"
+              value={formattedPhone}
+              onChange={handlePhoneChange}
+              maxLength={12} // 10 digits + 2 hyphens
+              className={`w-full pl-12 pr-5 py-4 rounded-xl border-2 outline-none text-lg tracking-wide font-mono ${!isValidPhone && bookingState.customerPhone.length > 0 ? 'border-red-500 focus:border-red-500 text-red-600' : 'border-stone-200 focus:border-primary-500 focus:ring-1 focus:ring-primary-500'}`}
+              placeholder="0xx-xxx-xxxx"
             />
-            {touched.name && !isValidName && (
-              <p className="text-red-500 mt-2 flex items-center gap-1 text-base font-medium">
-                <AlertCircle size={18}/> กรุณาระบุชื่อ
-              </p>
-            )}
           </div>
-
-          {/* Phone Field */}
-          <div>
-            <label className="text-lg font-bold text-stone-700 mb-2 block">
-              เบอร์โทรศัพท์มือถือ <span className="text-red-500">*</span>
-            </label>
-            <div className="relative">
-              <input 
-                type="tel" 
-                value={phone}
-                onChange={handlePhoneChange}
-                onBlur={() => handleBlur('phone')}
-                maxLength={12} // 0xx-xxx-xxxx
-                inputMode="numeric"
-                className={`
-                  w-full pl-12 pr-5 py-4 rounded-xl border-2 text-xl outline-none shadow-sm transition-all font-mono tracking-wide
-                  placeholder:text-stone-300 placeholder:font-sans placeholder:tracking-normal
-                  ${touched.phone && !isValidMobile
-                    ? 'border-red-400 bg-red-50 text-red-900 focus:ring-2 focus:ring-red-200' 
-                    : 'border-stone-300 focus:border-primary-500 focus:ring-4 focus:ring-primary-100'}
-                `}
-                placeholder="0xx-xxx-xxxx"
-              />
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400">
-                <Phone size={24} />
-              </div>
-            </div>
-            
-            {touched.phone && !isValidMobile ? (
-              <div className="mt-3 p-3 bg-red-50 rounded-lg border border-red-200 flex items-start gap-2">
-                <AlertCircle className="text-red-500 shrink-0 mt-0.5" size={20} />
-                <p className="text-red-600 text-base leading-tight">
-                  กรุณากรอกเบอร์มือถือ 10 หลักให้ถูกต้อง <br/>
-                  (ขึ้นต้นด้วย 06, 08 หรือ 09)
-                </p>
-              </div>
-            ) : (
-              <p className="text-stone-500 mt-2 text-sm">
-                * ระบบจะส่งยืนยันการจองไปที่เบอร์นี้
-              </p>
-            )}
-          </div>
+          {!isValidPhone && bookingState.customerPhone.length > 0 && (
+            <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
+              <AlertCircle size={16} /> กรุณากรอกเบอร์มือถือให้ถูกต้อง (เช่น 0812345678)
+            </p>
+          )}
         </div>
       </div>
 
       <Button 
         fullWidth 
-        onClick={handleSubmit} 
-        disabled={isProcessing || (touched.phone && !canSubmit)}
-        className={`
-          !py-5 !text-xl !rounded-2xl shadow-xl font-bold
-          ${(!canSubmit && touched.phone) ? '!bg-stone-300 !text-stone-500 !shadow-none cursor-not-allowed border-none' : ''}
-        `}
+        onClick={onConfirm} 
+        disabled={!canSubmit}
+        className="mt-4 !py-4 !text-xl !font-bold"
       >
-        {isProcessing ? (
-          <div className="flex items-center justify-center gap-3">
-            <Loader2 className="animate-spin" size={24} /> กำลังยืนยัน...
-          </div>
-        ) : 'ยืนยันการจอง'}
+        ยืนยันการจอง
       </Button>
     </div>
   );
 };
 
-// 6. Success Component (Updated with QR Code)
-const SuccessScreen = ({ bookingId }: { bookingId: string }) => (
-  <div className="flex flex-col items-center justify-center py-10 px-6 space-y-8 animate-fade-in text-center h-full">
-    <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center text-green-600 animate-bounce shadow-lg">
-      <CheckCircle2 size={56} />
-    </div>
-    
-    <div>
-      <h2 className="text-3xl font-bold text-stone-800">จองสำเร็จ!</h2>
-      <p className="text-lg text-stone-500 mt-2">
-        ขอบคุณที่ใช้บริการค่ะ
-      </p>
-    </div>
+// 6. Success Component (Ticket)
+const SuccessScreen = ({ bookingId }: { bookingId: string }) => {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[50vh] animate-fade-in pb-10 px-2">
+      <div className="text-center mb-6">
+        <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 text-green-600">
+          <CheckCircle2 size={48} />
+        </div>
+        <h2 className="text-3xl font-bold text-stone-800">จองสำเร็จ!</h2>
+        <p className="text-stone-500 mt-2 text-lg">ขอบคุณที่ใช้บริการค่ะ</p>
+      </div>
 
-    {/* Ticket / QR Code Card */}
-    <div className="bg-white p-6 rounded-3xl shadow-xl border-2 border-primary-500 w-full max-w-sm relative overflow-hidden">
-      <div className="absolute top-0 left-0 w-full h-2 bg-primary-500"></div>
-      
-      <div className="text-center space-y-4">
-        <div className="bg-stone-50 p-2 rounded-xl inline-block border border-stone-100">
-           <img 
-            src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${bookingId}`} 
-            alt="Booking QR Code" 
-            className="w-48 h-48 mix-blend-multiply"
-          />
+      {/* Ticket UI */}
+      <div className="bg-white w-full max-w-sm rounded-3xl overflow-hidden shadow-xl border border-stone-100 relative">
+        {/* Ticket Header */}
+        <div className="bg-primary-600 p-6 text-center">
+           <h3 className="text-white text-xl font-bold">บัตรนัดรับบริการ</h3>
+           <p className="text-primary-100 text-sm opacity-90">คลินิกแผนไทย วสส.พล</p>
         </div>
         
-        <div>
-          <p className="text-stone-400 text-sm uppercase tracking-wider mb-1">Booking ID</p>
-          <p className="text-2xl font-mono font-bold text-stone-800 tracking-wider select-all">{bookingId}</p>
+        {/* Ticket Body */}
+        <div className="p-8 flex flex-col items-center gap-6">
+           <div className="bg-white p-2 rounded-xl border-2 border-stone-100 shadow-inner">
+             <img 
+               src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${bookingId}`} 
+               alt="Booking QR" 
+               className="w-48 h-48 object-contain"
+             />
+           </div>
+           
+           <div className="text-center space-y-1">
+             <p className="text-stone-400 text-sm uppercase tracking-wider font-semibold">Booking ID</p>
+             <p className="text-2xl font-mono font-bold text-stone-800 tracking-widest">{bookingId}</p>
+           </div>
         </div>
 
-        <div className="pt-4 border-t border-stone-100 border-dashed">
-           <p className="text-base font-medium text-stone-600 flex items-center justify-center gap-2">
-             <QrCode size={18} className="text-primary-500"/>
-             โปรดยื่น QR Code นี้ที่หน้าเคาน์เตอร์
-           </p>
+        {/* Cutout Circles */}
+        <div className="absolute top-[88px] -left-4 w-8 h-8 bg-primary-50 rounded-full"></div>
+        <div className="absolute top-[88px] -right-4 w-8 h-8 bg-primary-50 rounded-full"></div>
+        
+        {/* Dashed Line */}
+        <div className="absolute top-[102px] left-4 right-4 border-b-2 border-dashed border-primary-400/30"></div>
+
+        {/* Footer */}
+        <div className="bg-stone-50 p-4 text-center border-t border-stone-100">
+          <p className="text-stone-500 text-sm flex items-center justify-center gap-2">
+            <QrCode size={16}/> โปรดยื่น QR Code นี้ที่หน้าเคาน์เตอร์
+          </p>
         </div>
       </div>
-      
-      {/* Decorative Circles for Ticket Effect */}
-      <div className="absolute -left-3 top-1/2 w-6 h-6 bg-stone-100 rounded-full"></div>
-      <div className="absolute -right-3 top-1/2 w-6 h-6 bg-stone-100 rounded-full"></div>
-    </div>
 
-    <div className="pt-4 w-full max-w-xs">
-      <Button variant="outline" fullWidth onClick={() => window.location.reload()} className="!py-4 !text-lg !rounded-xl border-2">
-        กลับหน้าหลัก
-      </Button>
+      <div className="mt-8">
+        <Button variant="ghost" onClick={() => window.location.reload()}>
+          กลับสู่หน้าหลัก
+        </Button>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
-// 7. My Bookings / History Screen
-const MyBookingsScreen = () => {
+// 7. My Bookings Screen
+const MyBookingsScreen = ({ onBack }: { onBack: () => void }) => {
   const [phone, setPhone] = useState('');
-  const [results, setResults] = useState<BookingHistory[]>([]);
   const [searched, setSearched] = useState(false);
+  const [results, setResults] = useState<BookingHistory[]>([]);
   const [selectedBooking, setSelectedBooking] = useState<BookingHistory | null>(null);
 
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const input = e.target.value.replace(/\D/g, '');
-    const limited = input.slice(0, 10);
-    let formatted = limited;
-    if (limited.length > 6) {
-      formatted = `${limited.slice(0, 3)}-${limited.slice(3, 6)}-${limited.slice(6)}`;
-    } else if (limited.length > 3) {
-      formatted = `${limited.slice(0, 3)}-${limited.slice(3)}`;
-    }
-    setPhone(formatted);
-  };
-
   const handleSearch = () => {
-    const rawPhone = phone.replace(/\D/g, '');
-    // Filter from Mock Data
-    const found = MOCK_BOOKING_HISTORY.filter(b => b.customerPhone === rawPhone);
-    setResults(found);
+    if (phone.length < 10) return;
     setSearched(true);
+    // Remove hyphens for search
+    const cleanPhone = phone.replace(/-/g, '');
+    const found = MOCK_BOOKING_HISTORY.filter(b => b.customerPhone === cleanPhone);
+    setResults(found);
     setSelectedBooking(null);
   };
 
-  const isValidPhone = /^0[689]\d{8}$/.test(phone.replace(/\D/g, ''));
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value.replace(/\D/g, '');
+    const truncated = raw.slice(0, 10);
+    setPhone(formatPhoneNumber(truncated));
+    setSearched(false); 
+  };
 
+  // If a booking is selected, show ticket view
   if (selectedBooking) {
-    // Re-use Success/Ticket UI logic but with a "Back to list" button
     return (
-      <div className="animate-fade-in flex flex-col h-full">
-         <button onClick={() => setSelectedBooking(null)} className="flex items-center text-stone-500 hover:text-stone-800 mb-4 px-2">
-           <ChevronLeft size={20}/> กลับไปหน้ารายการ
-         </button>
-         <div className="flex-1 flex flex-col items-center justify-start space-y-6">
-            <h2 className="text-2xl font-bold text-stone-800">ข้อมูลการจอง</h2>
-            
-             <div className="bg-white p-6 rounded-3xl shadow-xl border-2 border-primary-500 w-full max-w-sm relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-full h-2 bg-primary-500"></div>
-              
-              <div className="text-center space-y-4">
-                <div className="bg-stone-50 p-2 rounded-xl inline-block border border-stone-100">
-                   <img 
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${selectedBooking.id}`} 
-                    alt="Booking QR Code" 
-                    className="w-48 h-48 mix-blend-multiply"
-                  />
-                </div>
-                
-                <div className="text-left space-y-2 px-2">
-                  <div className="flex justify-between items-baseline">
-                     <span className="text-stone-400 text-xs uppercase">Booking ID</span>
-                     <span className="font-mono font-bold text-stone-800">{selectedBooking.id}</span>
-                  </div>
-                   <div className="flex justify-between items-baseline">
-                     <span className="text-stone-400 text-xs uppercase">Service</span>
-                     <span className="font-medium text-stone-800">{selectedBooking.serviceName}</span>
-                  </div>
-                   <div className="flex justify-between items-baseline">
-                     <span className="text-stone-400 text-xs uppercase">Date</span>
-                     <span className="font-medium text-stone-800">{formatThaiDateString(selectedBooking.date)}</span>
-                  </div>
-                   <div className="flex justify-between items-baseline">
-                     <span className="text-stone-400 text-xs uppercase">Time</span>
-                     <span className="font-medium text-stone-800">{selectedBooking.time} น.</span>
-                  </div>
-                </div>
-
-                <div className="pt-4 border-t border-stone-100 border-dashed">
-                   <p className="text-base font-medium text-stone-600 flex items-center justify-center gap-2">
-                     <QrCode size={18} className="text-primary-500"/>
-                     แสดง QR Code ที่ร้าน
-                   </p>
-                </div>
-              </div>
-              
-              <div className="absolute -left-3 top-1/2 w-6 h-6 bg-stone-100 rounded-full"></div>
-              <div className="absolute -right-3 top-1/2 w-6 h-6 bg-stone-100 rounded-full"></div>
-            </div>
-         </div>
+      <div className="animate-fade-in">
+        <div className="mb-4">
+          <Button variant="ghost" onClick={() => setSelectedBooking(null)} className="pl-0">
+             <ChevronLeft size={20} className="mr-1"/> กลับไปรายการ
+          </Button>
+        </div>
+        <SuccessScreen bookingId={selectedBooking.id} />
       </div>
-    )
+    );
   }
 
   return (
     <div className="space-y-6 animate-fade-in pb-20">
       <div className="flex items-center gap-3 mb-2">
         <div className="bg-primary-100 p-3 rounded-full text-primary-600">
-          <Search size={32} />
+          <Ticket size={32} />
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-stone-800">ตรวจสอบการจอง</h2>
-          <p className="text-base text-stone-500">กรอกเบอร์โทรเพื่อค้นหาการจองของคุณ</p>
+          <h2 className="text-2xl font-bold text-stone-800">การจองของฉัน</h2>
+          <p className="text-base text-stone-500">กรอกเบอร์โทรศัพท์เพื่อค้นหา</p>
         </div>
       </div>
 
-      <div className="bg-white p-5 rounded-3xl shadow-sm border border-stone-200">
-        <label className="text-lg font-bold text-stone-700 mb-2 block">
-           เบอร์โทรศัพท์ <span className="text-red-500">*</span> (เช่น 0812345678)
-        </label>
-        <div className="flex gap-2">
-          <input 
-            type="tel" 
-            value={phone}
-            onChange={handlePhoneChange}
-            placeholder="0xx-xxx-xxxx"
-            className="flex-1 px-4 py-3 rounded-xl border-2 border-stone-300 text-lg outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-500 font-mono"
-            maxLength={12}
-          />
-          <Button 
-            onClick={handleSearch} 
-            disabled={!isValidPhone}
-            className="!rounded-xl"
-          >
-            ค้นหา
-          </Button>
+      <div className="bg-white p-6 rounded-3xl shadow-sm border border-stone-200 space-y-4">
+        <div>
+          <label className="block text-base font-medium text-stone-700 mb-2">เบอร์โทรศัพท์</label>
+          <div className="flex gap-2">
+            <input
+              type="tel"
+              value={phone}
+              onChange={handlePhoneChange}
+              placeholder="0xx-xxx-xxxx"
+              className="flex-1 px-5 py-3 rounded-xl border-2 border-stone-200 focus:border-primary-500 outline-none text-lg font-mono tracking-wide"
+            />
+            <Button onClick={handleSearch} disabled={phone.replace(/\D/g,'').length !== 10}>
+              <Search size={24} />
+            </Button>
+          </div>
         </div>
       </div>
 
       {searched && (
         <div className="space-y-4">
-          <h3 className="text-lg font-bold text-stone-800">ผลการค้นหา ({results.length})</h3>
+          <h3 className="text-lg font-bold text-stone-700 px-2">
+            {results.length > 0 ? 'รายการจองของคุณ' : 'ไม่พบข้อมูลการจอง'}
+          </h3>
           
-          {results.length === 0 ? (
-            <div className="text-center py-10 bg-stone-50 rounded-3xl border-2 border-dashed border-stone-200">
-              <p className="text-stone-500 text-lg">ไม่พบข้อมูลการจองของเบอร์นี้</p>
-            </div>
-          ) : (
-            <div className="grid gap-3">
-              {results.map((booking) => (
-                <div 
-                  key={booking.id}
-                  onClick={() => setSelectedBooking(booking)}
-                  className="bg-white p-4 rounded-2xl border-2 border-stone-100 shadow-sm hover:border-primary-300 active:scale-[0.99] transition-all cursor-pointer flex justify-between items-center group"
-                >
-                  <div className="flex items-center gap-4">
-                     <div className="bg-primary-50 text-primary-600 p-3 rounded-xl font-bold text-center min-w-[70px]">
-                        <div className="text-sm">{booking.time}</div>
-                        <div className="text-lg leading-none">{formatThaiDateString(booking.date).split(' ')[0]}</div>
-                        <div className="text-[10px]">{formatThaiDateString(booking.date).split(' ')[1]}</div>
-                     </div>
-                     <div>
-                       <h4 className="font-bold text-stone-800 text-lg">{booking.serviceName}</h4>
-                       <p className="text-stone-500 text-sm flex items-center gap-1">
-                         <Store size={12}/> {booking.branchName}
-                       </p>
-                     </div>
-                  </div>
-                  <div className="text-stone-300 group-hover:text-primary-500">
-                    <Ticket size={24} />
-                  </div>
+          {results.map(booking => (
+            <div 
+              key={booking.id}
+              onClick={() => setSelectedBooking(booking)}
+              className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm flex justify-between items-center hover:border-primary-400 cursor-pointer active:scale-98 transition-all relative overflow-hidden group"
+            >
+              <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-primary-500"></div>
+              <div>
+                <div className="text-primary-700 font-bold mb-1">{booking.serviceName}</div>
+                <div className="text-stone-500 text-sm flex items-center gap-2">
+                  <Calendar size={14}/> {formatThaiDateString(booking.date)}
                 </div>
-              ))}
+                <div className="text-stone-500 text-sm flex items-center gap-2">
+                   <Clock size={14}/> {booking.time} น.
+                </div>
+              </div>
+              <div className="text-right">
+                <div className={`text-xs font-bold px-2 py-1 rounded-full mb-2 inline-block ${
+                  booking.status === 'completed' ? 'bg-green-100 text-green-700' :
+                  booking.status === 'confirmed' ? 'bg-blue-100 text-blue-700' : 'bg-stone-100 text-stone-500'
+                }`}>
+                  {booking.status === 'completed' ? 'ใช้บริการแล้ว' : 'ยืนยันแล้ว'}
+                </div>
+                <div className="text-stone-300 group-hover:text-primary-500 transition-colors">
+                  <ChevronLeft size={20} className="rotate-180" />
+                </div>
+              </div>
             </div>
-          )}
+          ))}
         </div>
       )}
     </div>
   );
-}
+};
+
 
 // --- Main App Component ---
 
 const App: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<BookingStep>(BookingStep.BRANCH_SELECTION);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [bookingId, setBookingId] = useState<string>('');
-  const [booking, setBooking] = useState<BookingState>({
+  const [bookingState, setBookingState] = useState<BookingState>({
     branch: null,
     service: null,
     date: null,
@@ -902,209 +775,177 @@ const App: React.FC = () => {
     customerName: '',
     customerPhone: ''
   });
+  const [bookingId, setBookingId] = useState<string>('');
 
-  const nextStep = () => {
-    if (currentStep < BookingStep.CONFIRMATION) {
-      setCurrentStep(prev => prev + 1);
-    }
+  const handleStepComplete = (nextStep: BookingStep) => {
+    setCurrentStep(nextStep);
+    // Default browser scroll handling (top of container)
+    window.scrollTo(0, 0);
   };
 
-  const prevStep = () => {
+  const handleBack = () => {
+    if (currentStep === BookingStep.BRANCH_SELECTION) return;
     if (currentStep === BookingStep.MY_BOOKINGS) {
       setCurrentStep(BookingStep.BRANCH_SELECTION);
       return;
     }
-    if (currentStep > BookingStep.BRANCH_SELECTION) {
-      setCurrentStep(prev => prev - 1);
-    }
+    setCurrentStep(currentStep - 1);
   };
 
-  const handleConfirmBooking = (customerData: {name: string, phone: string}) => {
-    setBooking(prev => ({
-      ...prev,
-      customerName: customerData.name,
-      customerPhone: customerData.phone
-    }));
+  const updateBookingState = (field: keyof BookingState, value: any) => {
+    setBookingState(prev => ({ ...prev, [field]: value }));
+  };
 
-    setIsProcessing(true);
+  const handleConfirmBooking = () => {
+    // Generate Fake Booking ID: SS-YYMMDD-XXXX
+    const dateStr = new Date().toISOString().slice(2, 10).replace(/-/g, ''); // 251209
+    const random = Math.floor(1000 + Math.random() * 9000);
+    const newId = `SS-${dateStr}-${random}`;
     
-    // Simulate API Processing
-    setTimeout(() => {
-      // Generate Booking ID: SS-[Date]-[Random]
-      const now = new Date();
-      const datePart = `${now.getFullYear().toString().substr(-2)}${(now.getMonth()+1).toString().padStart(2,'0')}${now.getDate().toString().padStart(2,'0')}`;
-      const randomPart = Math.floor(1000 + Math.random() * 9000);
-      const newId = `SS-${datePart}-${randomPart}`;
-      
-      setBookingId(newId);
-      setIsProcessing(false);
-      setCurrentStep(BookingStep.SUCCESS);
-    }, 2000);
+    setBookingId(newId);
+    handleStepComplete(BookingStep.SUCCESS);
   };
 
-  const scrollToBottom = () => {
-    // Small timeout to allow state updates/rendering to finish before scrolling
-    setTimeout(() => {
-      window.scrollTo({
-        top: document.documentElement.scrollHeight,
-        behavior: 'smooth'
-      });
-    }, 100);
-  };
-
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [currentStep]);
-
-  const canProceed = () => {
+  const renderStep = () => {
     switch (currentStep) {
-      case BookingStep.BRANCH_SELECTION: return !!booking.branch;
-      case BookingStep.SERVICE_SELECTION: return !!booking.service;
-      case BookingStep.DATE_SELECTION: return !!booking.date;
-      case BookingStep.TIME_SELECTION: return !!booking.timeSlot;
-      case BookingStep.STAFF_SELECTION: return !!booking.staff;
-      default: return false;
+      case BookingStep.BRANCH_SELECTION:
+        return (
+          <BranchSelection 
+            onSelect={(b) => {
+              updateBookingState('branch', b);
+              handleStepComplete(BookingStep.SERVICE_SELECTION);
+            }}
+            onCheckHistory={() => handleStepComplete(BookingStep.MY_BOOKINGS)}
+          />
+        );
+      case BookingStep.MY_BOOKINGS:
+        return <MyBookingsScreen onBack={() => handleBack()} />;
+      case BookingStep.SERVICE_SELECTION:
+        return (
+          <ServiceSelection 
+            onSelect={(s) => {
+              updateBookingState('service', s);
+              handleStepComplete(BookingStep.DATE_SELECTION);
+            }} 
+          />
+        );
+      case BookingStep.DATE_SELECTION:
+        return (
+          <DateSelection 
+            selectedDate={bookingState.date}
+            onSelect={(d) => {
+              updateBookingState('date', d);
+              handleStepComplete(BookingStep.TIME_SELECTION);
+            }} 
+          />
+        );
+      case BookingStep.TIME_SELECTION:
+        return (
+          <TimeSelection 
+            selectedTime={bookingState.timeSlot}
+            onSelect={(t) => {
+              updateBookingState('timeSlot', t);
+              handleStepComplete(BookingStep.STAFF_SELECTION);
+            }} 
+          />
+        );
+      case BookingStep.STAFF_SELECTION:
+        return (
+          <StaffSelection 
+            serviceId={bookingState.service?.id || ''}
+            selectedStaff={bookingState.staff}
+            date={bookingState.date || new Date()}
+            timeSlot={bookingState.timeSlot || {id:'', time:'', available:false}}
+            onSelect={(s) => {
+              updateBookingState('staff', s);
+              handleStepComplete(BookingStep.CONFIRMATION);
+            }} 
+          />
+        );
+      case BookingStep.CONFIRMATION:
+        return (
+          <Confirmation 
+            bookingState={bookingState} 
+            onChange={(field, val) => updateBookingState(field as keyof BookingState, val)}
+            onConfirm={handleConfirmBooking}
+          />
+        );
+      case BookingStep.SUCCESS:
+        return <SuccessScreen bookingId={bookingId} />;
+      default:
+        return null;
     }
   };
 
   const getStepTitle = () => {
     switch (currentStep) {
-      case BookingStep.BRANCH_SELECTION: return 'เลือกสาขา';
+      case BookingStep.MY_BOOKINGS: return 'ประวัติการจอง';
+      case BookingStep.BRANCH_SELECTION: return 'คลินิกแผนไทย วสส.พล';
       case BookingStep.SERVICE_SELECTION: return 'เลือกบริการ';
       case BookingStep.DATE_SELECTION: return 'เลือกวันที่';
       case BookingStep.TIME_SELECTION: return 'เลือกเวลา';
       case BookingStep.STAFF_SELECTION: return 'เลือกพนักงาน';
-      case BookingStep.CONFIRMATION: return 'ยืนยันข้อมูล';
-      case BookingStep.MY_BOOKINGS: return 'ประวัติการจอง';
-      default: return 'Booking Ticket';
+      case BookingStep.CONFIRMATION: return 'ยืนยันการจอง';
+      case BookingStep.SUCCESS: return 'จองสำเร็จ';
+      default: return 'จองคิว';
     }
   };
 
+  // High Contrast Header Logic
   return (
-    <div className="min-h-screen bg-stone-100 font-sans text-stone-900">
-      <div className="max-w-lg mx-auto bg-stone-50 min-h-screen shadow-2xl relative flex flex-col">
+    <div className="min-h-screen bg-primary-50 font-sans text-stone-800 pb-10">
+      <div className="max-w-lg mx-auto bg-primary-50 min-h-screen shadow-2xl relative">
         
-        {/* Large Header for Elderly */}
-        <header className="bg-white px-6 py-5 flex items-center justify-between sticky top-0 z-50 shadow-md border-b border-stone-100">
-          <div className="flex items-center gap-3">
-            {(currentStep > 0 && currentStep !== BookingStep.SUCCESS) && (
-              <button 
-                onClick={prevStep} 
-                className="p-2 -ml-3 text-stone-600 hover:bg-stone-100 rounded-full active:bg-stone-200 transition-colors"
-                aria-label="ย้อนกลับ"
-              >
-                <ChevronLeft size={32} />
-              </button>
-            )}
-            <div>
-              <h1 className="font-bold text-2xl text-primary-800 leading-none">
-                SiamSerenity
-              </h1>
-              <p className="text-sm text-stone-500 font-medium mt-1">{getStepTitle()}</p>
+        {/* Header */}
+        <header className="sticky top-0 z-50 bg-primary-700 text-white shadow-md transition-all duration-300">
+          <div className="px-4 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              {currentStep > 0 && currentStep !== BookingStep.SUCCESS && (
+                <button 
+                  onClick={handleBack}
+                  className="p-2 rounded-full hover:bg-primary-600 transition-colors text-white"
+                >
+                  <ChevronLeft size={24} />
+                </button>
+              )}
+              <div>
+                <h1 className="text-xl font-bold leading-none drop-shadow-sm">{getStepTitle()}</h1>
+                {currentStep === BookingStep.BRANCH_SELECTION && (
+                   <p className="text-primary-100 text-xs mt-1">ยินดีต้อนรับเข้าสู่บริการค่ะ</p>
+                )}
+              </div>
+            </div>
+            <div className="w-10 h-10 bg-primary-600 rounded-full flex items-center justify-center border border-primary-500 shadow-inner">
+              <User size={20} className="text-white" />
             </div>
           </div>
-          <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 shadow-sm border border-primary-200">
-            <User size={20} />
-          </div>
+          
+          <StepIndicator currentStep={currentStep} />
         </header>
 
-        {/* Improved Progress Indicator */}
-        <div className="bg-white pb-2">
-          <StepIndicator currentStep={currentStep} />
-        </div>
-
-        {/* Main Content */}
-        <main className="flex-1 px-5 py-6 overflow-y-auto">
-          {currentStep === BookingStep.BRANCH_SELECTION && (
-            <BranchSelection 
-              onSelect={(b) => { setBooking({...booking, branch: b}); nextStep(); }} 
-              onCheckHistory={() => setCurrentStep(BookingStep.MY_BOOKINGS)}
-            />
-          )}
-
-          {currentStep === BookingStep.MY_BOOKINGS && (
-            <MyBookingsScreen />
-          )}
-
-          {currentStep === BookingStep.SERVICE_SELECTION && (
-            <ServiceSelection 
-              onSelect={(s) => { setBooking({...booking, service: s}); nextStep(); }} 
-              recommendedId={undefined}
-            />
-          )}
-          
-          {currentStep === BookingStep.DATE_SELECTION && (
-            <DateSelection 
-              selectedDate={booking.date} 
-              onSelect={(d) => {
-                setBooking(prev => ({...prev, date: d}));
-                scrollToBottom();
-              }} 
-            />
-          )}
-
-          {currentStep === BookingStep.TIME_SELECTION && (
-            <TimeSelection 
-              selectedTime={booking.timeSlot} 
-              onSelect={(t) => {
-                setBooking(prev => ({...prev, timeSlot: t}));
-                scrollToBottom();
-              }} 
-            />
-          )}
-
-          {currentStep === BookingStep.STAFF_SELECTION && booking.service && booking.date && booking.timeSlot && (
-            <StaffSelection 
-              serviceId={booking.service.id}
-              selectedStaff={booking.staff} 
-              date={booking.date}
-              timeSlot={booking.timeSlot}
-              onSelect={(s) => {
-                setBooking(prev => ({...prev, staff: s}));
-                scrollToBottom();
-              }} 
-            />
-          )}
-
-          {currentStep === BookingStep.CONFIRMATION && (
-            <Confirmation 
-              booking={booking} 
-              onConfirm={handleConfirmBooking}
-              isProcessing={isProcessing}
-            />
-          )}
-
-          {currentStep === BookingStep.SUCCESS && (
-            <SuccessScreen bookingId={bookingId} />
-          )}
+        {/* Content */}
+        <main className="p-4 pt-6">
+          {renderStep()}
         </main>
 
-        {/* Large Bottom Navigation Bar */}
-        {currentStep !== BookingStep.BRANCH_SELECTION && 
-         currentStep !== BookingStep.SERVICE_SELECTION && 
-         currentStep !== BookingStep.CONFIRMATION && 
-         currentStep !== BookingStep.SUCCESS && 
-         currentStep !== BookingStep.MY_BOOKINGS && (
-          <div className="sticky bottom-0 left-0 right-0 p-5 bg-white border-t border-stone-200 z-40 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-            <div className="flex justify-between items-center mb-3">
-              <span className="text-stone-500 font-medium">รายการที่เลือก:</span>
-              <span className="text-primary-700 font-bold text-lg">
-                {currentStep === BookingStep.DATE_SELECTION && (booking.date ? formatThaiDate(booking.date) : (booking.branch?.name.replace('สาขา', '') || '-'))}
-                {currentStep === BookingStep.TIME_SELECTION && (booking.timeSlot ? booking.timeSlot.time + ' น.' : (booking.branch?.name.replace('สาขา', '') || '-'))}
-                {currentStep === BookingStep.STAFF_SELECTION && (booking.staff ? booking.staff.name : (booking.branch?.name.replace('สาขา', '') || '-'))}
-              </span>
+        {/* Footer Summary (Sticky Bottom) */}
+        {currentStep > BookingStep.BRANCH_SELECTION && currentStep < BookingStep.CONFIRMATION && currentStep !== BookingStep.MY_BOOKINGS && (
+          <div className="fixed bottom-0 left-0 right-0 z-40">
+            <div className="max-w-lg mx-auto bg-white/95 backdrop-blur-md border-t border-stone-200 p-4 shadow-lg-up">
+              <div className="flex items-center justify-between text-sm">
+                <div className="flex flex-col">
+                  <span className="text-stone-400 text-xs">สรุปรายการ</span>
+                  <div className="flex items-center gap-2 font-medium text-stone-800">
+                    {bookingState.branch?.name && <span>{bookingState.branch.name.split('สาขา')[1]}</span>}
+                    {bookingState.service && <span>• {bookingState.service.name}</span>}
+                  </div>
+                  <div className="text-primary-600 font-bold text-xs mt-0.5">
+                    {bookingState.date && <span>{formatThaiDate(bookingState.date)}</span>}
+                    {bookingState.timeSlot && <span>, {bookingState.timeSlot.time} น.</span>}
+                  </div>
+                </div>
+              </div>
             </div>
-            <Button 
-              fullWidth 
-              onClick={nextStep} 
-              disabled={!canProceed()}
-              className={`
-                !py-4 !text-xl !rounded-2xl font-bold shadow-lg
-                ${!canProceed() ? '!bg-stone-200 !text-stone-400 !shadow-none border-none' : ''}
-              `}
-            >
-              ถัดไป
-            </Button>
           </div>
         )}
       </div>
