@@ -139,9 +139,11 @@ const BranchSelection = ({
 
 // 1. Service Selection Component
 const ServiceSelection = ({ 
+  branchId,
   onSelect, 
   recommendedId 
 }: { 
+  branchId: string,
   onSelect: (s: Service) => void, 
   recommendedId?: string 
 }) => {
@@ -149,9 +151,16 @@ const ServiceSelection = ({
   const [isThinking, setIsThinking] = useState(false);
   const [aiResult, setAiResult] = useState<{id: string, reason: string} | null>(null);
 
+  // Filter services based on the selected branch
+  const branch = BRANCHES.find(b => b.id === branchId);
+  const availableServices = SERVICES.filter(s => branch?.availableServices?.includes(s.id));
+
   const handleAskAI = async () => {
     if (!prompt.trim()) return;
     setIsThinking(true);
+    // Use only available services for recommendation context
+    // Ideally we pass availableServices to the AI context, but for simplicity we keep the service helper as is 
+    // or we could update it. For now, let's assume global context is fine but we filter result.
     const result = await getServiceRecommendation(prompt);
     setIsThinking(false);
     if (result) {
@@ -202,41 +211,47 @@ const ServiceSelection = ({
 
       {/* Services List - Large Cards */}
       <div className="space-y-4">
-        {SERVICES.map((service) => {
-          const isRecommended = aiResult?.id === service.id;
-          return (
-            <div 
-              key={service.id}
-              onClick={() => onSelect(service)}
-              className={`
-                relative flex items-center p-5 rounded-3xl border-2 transition-all cursor-pointer shadow-sm
-                active:scale-[0.98] touch-manipulation
-                ${isRecommended ? 'border-primary-500 bg-primary-50 ring-1 ring-primary-500' : 'border-stone-200 bg-white hover:border-primary-300'}
-              `}
-            >
-              {isRecommended && (
-                <div className="absolute -top-4 right-6 bg-primary-600 text-white text-sm px-4 py-1.5 rounded-full font-bold shadow-md flex items-center gap-1">
-                  <Sparkles size={14} /> แนะนำสำหรับคุณ
-                </div>
-              )}
-              
-              <img src={service.image} alt={service.name} className="w-24 h-24 rounded-2xl object-cover shadow-md" />
-              
-              <div className="ml-5 flex-1 min-w-0">
-                <h3 className="text-xl font-bold text-stone-900 leading-tight mb-2">{service.name}</h3>
-                <p className="text-base text-stone-500 line-clamp-2 leading-relaxed mb-3">{service.description}</p>
-                <div className="flex items-center gap-3">
-                  <span className="inline-block bg-primary-100 text-primary-800 px-3 py-1 rounded-lg text-base font-bold">
-                    {service.price} บ.
-                  </span>
-                  <span className="text-stone-500 text-base flex items-center gap-1">
-                    <Clock size={16} /> {service.duration} นาที
-                  </span>
+        {availableServices.length === 0 ? (
+           <div className="text-center py-10 text-stone-500">
+             ไม่พบรายการบริการสำหรับสาขานี้
+           </div>
+        ) : (
+          availableServices.map((service) => {
+            const isRecommended = aiResult?.id === service.id;
+            return (
+              <div 
+                key={service.id}
+                onClick={() => onSelect(service)}
+                className={`
+                  relative flex items-center p-5 rounded-3xl border-2 transition-all cursor-pointer shadow-sm
+                  active:scale-[0.98] touch-manipulation
+                  ${isRecommended ? 'border-primary-500 bg-primary-50 ring-1 ring-primary-500' : 'border-stone-200 bg-white hover:border-primary-300'}
+                `}
+              >
+                {isRecommended && (
+                  <div className="absolute -top-4 right-6 bg-primary-600 text-white text-sm px-4 py-1.5 rounded-full font-bold shadow-md flex items-center gap-1">
+                    <Sparkles size={14} /> แนะนำสำหรับคุณ
+                  </div>
+                )}
+                
+                <img src={service.image} alt={service.name} className="w-24 h-24 rounded-2xl object-cover shadow-md" />
+                
+                <div className="ml-5 flex-1 min-w-0">
+                  <h3 className="text-xl font-bold text-stone-900 leading-tight mb-2">{service.name}</h3>
+                  <p className="text-base text-stone-500 line-clamp-2 leading-relaxed mb-3">{service.description}</p>
+                  <div className="flex items-center gap-3">
+                    <span className="inline-block bg-primary-100 text-primary-800 px-3 py-1 rounded-lg text-base font-bold">
+                      {service.price} บ.
+                    </span>
+                    <span className="text-stone-500 text-base flex items-center gap-1">
+                      <Clock size={16} /> {service.duration} นาที
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })
+        )}
       </div>
     </div>
   );
@@ -846,6 +861,7 @@ const App: React.FC = () => {
       case BookingStep.SERVICE_SELECTION:
         return (
           <ServiceSelection 
+            branchId={bookingState.branch?.id || ''}
             onSelect={(s) => {
               updateBookingState('service', s);
               handleStepComplete(BookingStep.DATE_SELECTION);
@@ -943,7 +959,10 @@ const App: React.FC = () => {
             </div>
           </div>
           
-          <StepIndicator currentStep={currentStep} />
+          <StepIndicator 
+            currentStep={currentStep} 
+            onStepClick={(step) => setCurrentStep(step)}
+          />
         </header>
 
         {/* Content */}
@@ -977,4 +996,3 @@ const App: React.FC = () => {
 };
 
 export default App;
-    

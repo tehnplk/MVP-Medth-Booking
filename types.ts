@@ -15,6 +15,7 @@ export interface Branch {
   name: string;
   location: string;
   image: string;
+  availableServices: string[];
 }
 
 export interface Service {

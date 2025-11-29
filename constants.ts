@@ -5,19 +5,22 @@ export const BRANCHES: Branch[] = [
     id: 'b-siam',
     name: 'สาขาสยามพารากอน',
     location: 'ชั้น 3 ฝั่ง North โซน Beauty',
-    image: 'https://images.unsplash.com/photo-1590073242678-cfe2f792f3c8?auto=format&fit=crop&w=800&q=80'
+    image: 'https://images.unsplash.com/photo-1590073242678-cfe2f792f3c8?auto=format&fit=crop&w=800&q=80',
+    availableServices: ['thai-traditional', 'aroma-oil', 'foot-massage', 'office-syndrome']
   },
   {
     id: 'b-central',
     name: 'สาขาเซ็นทรัลเวิลด์',
     location: 'ชั้น 2 โซน Dazzle',
-    image: 'https://images.unsplash.com/photo-1565060169194-1372607d8804?auto=format&fit=crop&w=800&q=80'
+    image: 'https://images.unsplash.com/photo-1565060169194-1372607d8804?auto=format&fit=crop&w=800&q=80',
+    availableServices: ['thai-traditional', 'aroma-oil', 'foot-massage', 'office-syndrome']
   },
   {
     id: 'b-thonglor',
     name: 'สาขาทองหล่อ',
     location: 'สุขุมวิท 55 (ทองหล่อ 13)',
-    image: 'https://images.unsplash.com/photo-1528183429752-a97d0bf99b5a?auto=format&fit=crop&w=800&q=80'
+    image: 'https://images.unsplash.com/photo-1528183429752-a97d0bf99b5a?auto=format&fit=crop&w=800&q=80',
+    availableServices: ['thai-traditional', 'aroma-oil', 'foot-massage', 'office-syndrome']
   }
 ];
 
